@@ -48,7 +48,7 @@ entities:
               min: 2700
               max: 6500
   - entity: text
-    name: Scene
+    translation_key: scene
     category: config
     hidden: true
     dps:
@@ -133,7 +133,7 @@ entities:
           - dps_val: "2"
             value: "pause"
   - entity: switch
-    name: Do not disturb
+    translation_key: do_not_disturb
     dps:
       - id: 34
         type: boolean

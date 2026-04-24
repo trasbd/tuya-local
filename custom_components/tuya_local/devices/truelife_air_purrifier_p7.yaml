@@ -1,4 +1,4 @@
-name: Air Purifier
+name: Air purifier
 products:
   - id: lpmzzlrklbkvsizu
     manufacturer: "TrueLife"
@@ -68,8 +68,7 @@ entities:
         type: boolean
         name: button
   - entity: sensor
-    name: Filter Usage
-    icon: "mdi:calendar-clock"
+    translation_key: filter_life
     category: diagnostic
     class: duration
     dps:

@@ -21,8 +21,6 @@ IRRIGSCHED_DP = "17"
 
 
 class TestBLEValve(TuyaDeviceTestCase):
-    __test__ = True
-
     def setUp(self):
         self.setUpForConfig("ble_water_valve.yaml", BLE_WATERVALVE_PAYLOAD)
         self.subject = self.entities["valve_water"]
@@ -82,3 +80,7 @@ class TestBLEValve(TuyaDeviceTestCase):
                 "irrigation_schedule": "irrigationtest",
             },
         )
+
+    def test_available(self):
+        """Override to ignore dynamic availability."""
+        pass

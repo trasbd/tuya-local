@@ -36,8 +36,6 @@ CARPET_DPS = "107"
 
 
 class TestKyvolE30Vacuum(MultiButtonTests, MultiSensorTests, TuyaDeviceTestCase):
-    __test__ = True
-
     def setUp(self):
         self.setUpForConfig("kyvol_e30_vacuum.yaml", KYVOL_E30_VACUUM_PAYLOAD)
         self.subject = self.entities.get("vacuum")
@@ -86,7 +84,7 @@ class TestKyvolE30Vacuum(MultiButtonTests, MultiSensorTests, TuyaDeviceTestCase)
                 },
                 {
                     "dps": FILTER_DPS,
-                    "name": "sensor_filter",
+                    "name": "sensor_filter_life",
                     "unit": PERCENTAGE,
                 },
                 {
@@ -113,7 +111,7 @@ class TestKyvolE30Vacuum(MultiButtonTests, MultiSensorTests, TuyaDeviceTestCase)
                 "sensor_clean_time",
                 "sensor_edge_brush",
                 "sensor_roll_brush",
-                "sensor_filter",
+                "sensor_filter_life",
                 "sensor_status",
             ]
         )

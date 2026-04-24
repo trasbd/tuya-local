@@ -22,8 +22,6 @@ UNKNOWN101_DPS = "101"
 
 
 class TestM027Curtains(MultiSensorTests, BasicSelectTests, TuyaDeviceTestCase):
-    __test__ = True
-
     def setUp(self):
         self.setUpForConfig("m027_curtain.yaml", M027_CURTAIN_PAYLOAD)
         self.subject = self.entities["cover_curtain"]
@@ -48,16 +46,16 @@ class TestM027Curtains(MultiSensorTests, BasicSelectTests, TuyaDeviceTestCase):
         )
         self.setUpBasicSelect(
             MODE_DPS,
-            self.entities.get("select_mode"),
+            self.entities.get("select_curtain_mode"),
             {
-                "morning": "Morning",
-                "night": "Night",
+                "morning": "morning",
+                "night": "night",
             },
         )
         self.mark_secondary(
             [
                 "binary_sensor_problem",
-                "select_mode",
+                "select_curtain_mode",
                 "sensor_time_remaining",
                 "sensor_travel_time",
             ]

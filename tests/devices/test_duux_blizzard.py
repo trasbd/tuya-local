@@ -1,6 +1,7 @@
 from homeassistant.components.climate.const import HVACMode
 
 from ..const import DUUX_BLIZZARD_PAYLOAD
+from ..helpers import assert_device_properties_set
 from ..mixins.climate import TargetTemperatureTests
 from .base_device_tests import TuyaDeviceTestCase
 
@@ -22,8 +23,6 @@ COUNTDOWN_DP = "15"
 
 
 class TestDuuxBlizzard(TargetTemperatureTests, TuyaDeviceTestCase):
-    __test__ = True
-
     def setUp(self):
         self.setUpForConfig(
             "duux_blizzard_portable_aircon.yaml",
@@ -82,3 +81,11 @@ class TestDuuxBlizzard(TargetTemperatureTests, TuyaDeviceTestCase):
         self.assertFalse(self.ionizer.available)
         self.dps[IONSHOW_DP] = True
         self.assertTrue(self.ionizer.available)
+
+    async def test_set_redirected_temperature(self):
+        self.dps[UNIT_DP] = True  # Fahrenheit
+        async with assert_device_properties_set(
+            self.subject._device,
+            {SETTEMPF_DP: 75},
+        ):
+            await self.subject.async_set_target_temperature(75)

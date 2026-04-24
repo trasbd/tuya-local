@@ -10,6 +10,7 @@ from custom_components.tuya_local.button import TuyaLocalButton
 from custom_components.tuya_local.camera import TuyaLocalCamera
 from custom_components.tuya_local.climate import TuyaLocalClimate
 from custom_components.tuya_local.cover import TuyaLocalCover
+from custom_components.tuya_local.datetime import TuyaLocalDateTime
 from custom_components.tuya_local.event import TuyaLocalEvent
 from custom_components.tuya_local.fan import TuyaLocalFan
 from custom_components.tuya_local.helpers.device_config import (
@@ -17,6 +18,7 @@ from custom_components.tuya_local.helpers.device_config import (
     possible_matches,
 )
 from custom_components.tuya_local.humidifier import TuyaLocalHumidifier
+from custom_components.tuya_local.infrared import TuyaLocalInfrared
 from custom_components.tuya_local.lawn_mower import TuyaLocalLawnMower
 from custom_components.tuya_local.light import TuyaLocalLight
 from custom_components.tuya_local.lock import TuyaLocalLock
@@ -39,9 +41,11 @@ DEVICE_TYPES = {
     "camera": TuyaLocalCamera,
     "climate": TuyaLocalClimate,
     "cover": TuyaLocalCover,
+    "datetime": TuyaLocalDateTime,
     "event": TuyaLocalEvent,
     "fan": TuyaLocalFan,
     "humidifier": TuyaLocalHumidifier,
+    "infrared": TuyaLocalInfrared,
     "lawn_mower": TuyaLocalLawnMower,
     "light": TuyaLocalLight,
     "lock": TuyaLocalLock,
@@ -68,7 +72,7 @@ class TuyaDeviceTestCase(IsolatedAsyncioTestCase):
         self.addCleanup(device_patcher.stop)
         self.mock_device = device_patcher.start()
         self.dps = payload.copy()
-        self.mock_device.get_property.side_effect = lambda id: self.dps.get(id)
+        self.mock_device.get_property.side_effect = lambda dpid: self.dps.get(dpid)
         cfg = TuyaDeviceConfig(config_file)
         self.conf_type = cfg.legacy_type
         type(self.mock_device).has_returned_state = PropertyMock(return_value=True)
@@ -123,6 +127,12 @@ class TuyaDeviceTestCase(IsolatedAsyncioTestCase):
                         e.entity_category,
                         EntityCategory.DIAGNOSTIC,
                         msg=f"{k} is {e.entity_category.value}, expected diagnostic",
+                    )
+                elif type(e) is TuyaLocalButton:
+                    self.assertIn(
+                        e.entity_category,
+                        [EntityCategory.CONFIG, EntityCategory.DIAGNOSTIC],
+                        msg=f"{k} is unsupported {e.entity_category.value}",
                     )
                 else:
                     self.assertEqual(

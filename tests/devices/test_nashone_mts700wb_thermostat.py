@@ -1,6 +1,7 @@
 from homeassistant.components.climate.const import ClimateEntityFeature, HVACMode
+from homeassistant.components.number import NumberDeviceClass
 from homeassistant.components.sensor import SensorDeviceClass
-from homeassistant.const import UnitOfTime
+from homeassistant.const import UnitOfTemperature, UnitOfTime
 
 from ..const import NASHONE_MTS700WB_THERMOSTAT_PAYLOAD
 from ..helpers import assert_device_properties_set
@@ -33,8 +34,6 @@ class TestNashoneMTS700WBThermostat(
     TargetTemperatureTests,
     TuyaDeviceTestCase,
 ):
-    __test__ = True
-
     def setUp(self):
         self.setUpForConfig(
             "nashone_mts700wb_thermostat.yaml",
@@ -53,9 +52,11 @@ class TestNashoneMTS700WBThermostat(
         )
         self.setUpBasicNumber(
             CALIBOFFSET_DPS,
-            self.entities.get("number_calibration_offset"),
+            self.entities.get("number_temperature_calibration"),
             min=-5,
             max=5,
+            device_class=NumberDeviceClass.TEMPERATURE_DELTA,
+            unit=UnitOfTemperature.CELSIUS,
         )
         self.setUpBasicSelect(
             TIMER_DPS,
@@ -74,7 +75,7 @@ class TestNashoneMTS700WBThermostat(
         self.mark_secondary(
             [
                 "button_factory_reset",
-                "number_calibration_offset",
+                "number_temperature_calibration",
                 "select_timer",
                 "sensor_time_remaining",
             ],
@@ -147,6 +148,3 @@ class TestNashoneMTS700WBThermostat(
             self.subject.extra_state_attributes,
             {"work_state": "manual"},
         )
-
-    def test_icons(self):
-        self.assertEqual(self.basicNumber.icon, "mdi:arrow-collapse-up")

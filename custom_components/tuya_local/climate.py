@@ -213,9 +213,9 @@ class TuyaLocalClimate(TuyaLocalEntity, ClimateEntity):
         """Return the minimum supported target temperature."""
         # if a separate min_temperature dps is specified, the device tells us.
         if self._mintemp_dps is not None:
-            min = self._mintemp_dps.get_value(self._device)
-            if min is not None:
-                return min
+            m = self._mintemp_dps.get_value(self._device)
+            if m is not None:
+                return m
 
         if self._temperature_dps is None:
             if self._temp_low_dps is None:
@@ -230,9 +230,9 @@ class TuyaLocalClimate(TuyaLocalEntity, ClimateEntity):
         """Return the maximum supported target temperature."""
         # if a separate max_temperature dps is specified, the device tells us.
         if self._maxtemp_dps is not None:
-            max = self._maxtemp_dps.get_value(self._device)
-            if max is not None:
-                return max
+            m = self._maxtemp_dps.get_value(self._device)
+            if m is not None:
+                return m
 
         if self._temperature_dps is None:
             if self._temp_high_dps is None:
@@ -245,14 +245,30 @@ class TuyaLocalClimate(TuyaLocalEntity, ClimateEntity):
     async def async_set_temperature(self, **kwargs):
         """Set new target temperature."""
         if kwargs.get(ATTR_PRESET_MODE) is not None:
+            _LOGGER.info(
+                "%s setting temperature: setting preset mode to %s",
+                self._config.config_id,
+                kwargs.get(ATTR_PRESET_MODE),
+            )
             await self.async_set_preset_mode(kwargs.get(ATTR_PRESET_MODE))
         if kwargs.get(ATTR_TEMPERATURE) is not None:
+            _LOGGER.info(
+                "%s setting temperature to %s",
+                self._config.config_id,
+                kwargs.get(ATTR_TEMPERATURE),
+            )
             await self.async_set_target_temperature(
                 kwargs.get(ATTR_TEMPERATURE),
             )
         high = kwargs.get(ATTR_TARGET_TEMP_HIGH)
         low = kwargs.get(ATTR_TARGET_TEMP_LOW)
         if high is not None or low is not None:
+            _LOGGER.info(
+                "%s setting temperature range to %s - %s",
+                self._config.config_id,
+                low,
+                high,
+            )
             await self.async_set_target_temperature_range(low, high)
 
     async def async_set_target_temperature(self, target_temperature):
@@ -269,11 +285,11 @@ class TuyaLocalClimate(TuyaLocalEntity, ClimateEntity):
         dps_map = {}
         if low is not None and self._temp_low_dps is not None:
             dps_map.update(
-                self._temp_low_dps.get_values_to_set(self._device, low),
+                self._temp_low_dps.get_values_to_set(self._device, low, dps_map),
             )
         if high is not None and self._temp_high_dps is not None:
             dps_map.update(
-                self._temp_high_dps.get_values_to_set(self._device, high),
+                self._temp_high_dps.get_values_to_set(self._device, high, dps_map),
             )
         if dps_map:
             await self._device.async_set_properties(dps_map)
@@ -282,7 +298,13 @@ class TuyaLocalClimate(TuyaLocalEntity, ClimateEntity):
     def current_temperature(self):
         """Return the current measured temperature."""
         if self._current_temperature_dps:
-            return self._current_temperature_dps.get_value(self._device)
+            temp = self._current_temperature_dps.get_value(self._device)
+            if self._current_temperature_dps.suggested_display_precision is not None:
+                # Round the value to the suggested precision
+                temp = round(
+                    temp, self._current_temperature_dps.suggested_display_precision
+                )
+            return temp
 
     @property
     def target_humidity(self):
@@ -311,6 +333,11 @@ class TuyaLocalClimate(TuyaLocalEntity, ClimateEntity):
         if self._humidity_dps is None:
             raise NotImplementedError()
 
+        _LOGGER.info(
+            "%s setting humidity to %s",
+            self._config.config_id,
+            humidity,
+        )
         await self._humidity_dps.async_set_value(self._device, humidity)
 
     @property
@@ -366,6 +393,11 @@ class TuyaLocalClimate(TuyaLocalEntity, ClimateEntity):
         """Set new HVAC mode."""
         if self._hvac_mode_dps is None:
             raise NotImplementedError()
+        _LOGGER.info(
+            "%s setting HVAC mode to %s",
+            self._config.config_id,
+            hvac_mode,
+        )
         await self._hvac_mode_dps.async_set_value(self._device, hvac_mode)
 
     async def async_turn_on(self):
@@ -373,6 +405,7 @@ class TuyaLocalClimate(TuyaLocalEntity, ClimateEntity):
         # Bypass the usual dps mapping to switch the power dp directly
         # this way the hvac_mode will be kept when toggling off and on.
         if self._hvac_mode_dps and self._hvac_mode_dps.type is bool:
+            _LOGGER.info("%s turning on", self._config.config_id)
             await self._device.async_set_property(self._hvac_mode_dps.id, True)
         else:
             await super().async_turn_on()
@@ -382,6 +415,7 @@ class TuyaLocalClimate(TuyaLocalEntity, ClimateEntity):
         # Bypass the usual dps mapping to switch the power dp directly
         # this way the hvac_mode will be kept when toggling off and on.
         if self._hvac_mode_dps and self._hvac_mode_dps.type is bool:
+            _LOGGER.info("%s turning off", self._config.config_id)
             await self._device.async_set_property(
                 self._hvac_mode_dps.id,
                 False,
@@ -406,6 +440,11 @@ class TuyaLocalClimate(TuyaLocalEntity, ClimateEntity):
         """Set the preset mode."""
         if self._preset_mode_dps is None:
             raise NotImplementedError()
+        _LOGGER.info(
+            "%s setting preset mode to %s",
+            self._config.config_id,
+            preset_mode,
+        )
         await self._preset_mode_dps.async_set_value(self._device, preset_mode)
 
     @property
@@ -425,6 +464,11 @@ class TuyaLocalClimate(TuyaLocalEntity, ClimateEntity):
         """Set the preset mode."""
         if self._swing_mode_dps is None:
             raise NotImplementedError()
+        _LOGGER.info(
+            "%s setting swing mode to %s",
+            self._config.config_id,
+            swing_mode,
+        )
         await self._swing_mode_dps.async_set_value(self._device, swing_mode)
 
     @property
@@ -444,6 +488,11 @@ class TuyaLocalClimate(TuyaLocalEntity, ClimateEntity):
         """Set the preset mode."""
         if self._swing_horizontal_mode_dps is None:
             raise NotImplementedError()
+        _LOGGER.info(
+            "%s setting horizontal swing mode to %s",
+            self._config.config_id,
+            swing_mode,
+        )
         await self._swing_horizontal_mode_dps.async_set_value(
             self._device,
             swing_mode,
@@ -466,4 +515,9 @@ class TuyaLocalClimate(TuyaLocalEntity, ClimateEntity):
         """Set the fan mode."""
         if self._fan_mode_dps is None:
             raise NotImplementedError()
+        _LOGGER.info(
+            "%s setting fan mode to %s",
+            self._config.config_id,
+            fan_mode,
+        )
         await self._fan_mode_dps.async_set_value(self._device, fan_mode)
